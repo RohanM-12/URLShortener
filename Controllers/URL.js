@@ -25,5 +25,50 @@ async function generateNewShortURLController(req, res) {
     });
   }
 }
+async function redirectToGenerated(req, res) {
+  try {
+    const shortId = req.params.shortId;
 
-module.exports = { generateNewShortURLController };
+    const entry = await URL.findOneAndUpdate(
+      { shortID: shortId },
+      {
+        $push: {
+          visitHistory: {
+            timestamp: Date.now(),
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).send("URL not found");
+    }
+
+    res.redirect(entry.redirectURL);
+  } catch (error) {
+    console.error(`Error occurred: ${error.message}`);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+async function getUrlAnalytics(req, res) {
+  try {
+    const shortId = req.params.shortId;
+    const result = await URL.findOne({ shortID: shortId });
+    return res.json({
+      totalClicks: result.visitHistory.length,
+      analytics: result.visitHistory,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+}
+
+module.exports = {
+  generateNewShortURLController,
+  redirectToGenerated,
+  getUrlAnalytics,
+};
