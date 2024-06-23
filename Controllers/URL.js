@@ -1,8 +1,9 @@
-const { nanoid } = require("nanoid");
+const shortId = require("shortid");
 const URL = require("../Models/URL");
+const shortid = require("shortid");
 async function generateNewShortURLController(req, res) {
   try {
-    const shortId = nanoid(8);
+    const shortId = shortid();
     const { redirectURL } = req.body;
     if (!redirectURL) {
       return res.status(400).json({
@@ -24,3 +25,5 @@ async function generateNewShortURLController(req, res) {
     });
   }
 }
+
+module.exports = { generateNewShortURLController };
